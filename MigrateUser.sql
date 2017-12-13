@@ -1,16 +1,22 @@
 # Run the following script, the users will be extracted in the results
 # Copy and run the result script for all or selected users
 # This script can be used to sync SQL local user SID
+# Check user SID:
+# SELECT name, sid 
+# FROM sys.server_principals 
+# WHERE name = 'TestLogin'
 
 USE master
-	GO
-	IF OBJECT_ID ('sp_hexadecimal') IS NOT NULL
-	  DROP PROCEDURE sp_hexadecimal
-	GO
-	CREATE PROCEDURE sp_hexadecimal
-	    @binvalue varbinary(256),
-	    @hexvalue varchar (514) OUTPUT
-	AS
+GO
+
+IF OBJECT_ID ('sp_hexadecimal') IS NOT NULL
+DROP PROCEDURE sp_hexadecimal
+GO
+
+CREATE PROCEDURE sp_hexadecimal
+	@binvalue varbinary(256),
+	@hexvalue varchar (514) OUTPUT
+AS
 	DECLARE @charvalue varchar (514)
 	DECLARE @i int
 	DECLARE @length int
@@ -21,25 +27,28 @@ USE master
 	SELECT @hexstring = '0123456789ABCDEF'
 	WHILE (@i <= @length)
 	BEGIN
-	  DECLARE @tempint int
-	  DECLARE @firstint int
-	  DECLARE @secondint int
-	  SELECT @tempint = CONVERT(int, SUBSTRING(@binvalue,@i,1))
-	  SELECT @firstint = FLOOR(@tempint/16)
-	  SELECT @secondint = @tempint - (@firstint*16)
-	  SELECT @charvalue = @charvalue +
-	    SUBSTRING(@hexstring, @firstint+1, 1) +
-	    SUBSTRING(@hexstring, @secondint+1, 1)
-	  SELECT @i = @i + 1
+		DECLARE @tempint int
+		DECLARE @firstint int
+		DECLARE @secondint int
+		SELECT @tempint = CONVERT(int, SUBSTRING(@binvalue,@i,1))
+		SELECT @firstint = FLOOR(@tempint/16)
+		SELECT @secondint = @tempint - (@firstint*16)
+		SELECT @charvalue = @charvalue +
+			SUBSTRING(@hexstring, @firstint+1, 1) +
+			SUBSTRING(@hexstring, @secondint+1, 1)
+		SELECT @i = @i + 1
 	END
 	
-	SELECT @hexvalue = @charvalue
-	GO
+SELECT @hexvalue = @charvalue
+GO
 	 
-	IF OBJECT_ID ('sp_help_revlogin') IS NOT NULL
-	  DROP PROCEDURE sp_help_revlogin
-	GO
-	CREATE PROCEDURE sp_help_revlogin @login_name sysname = NULL AS
+IF OBJECT_ID ('sp_help_revlogin') IS NOT NULL
+	 DROP PROCEDURE sp_help_revlogin
+GO
+	
+CREATE PROCEDURE sp_help_revlogin 
+	@login_name sysname = NULL 
+AS
 	DECLARE @name sysname
 	DECLARE @type varchar (1)
 	DECLARE @hasaccess int
@@ -56,16 +65,16 @@ USE master
 	DECLARE @defaultdb sysname
 	 
 	IF (@login_name IS NULL)
-	  DECLARE login_curs CURSOR FOR
+	  	DECLARE login_curs CURSOR FOR
 	
-	      SELECT p.sid, p.name, p.type, p.is_disabled, p.default_database_name, l.hasaccess, l.denylogin FROM 
+	SELECT p.sid, p.name, p.type, p.is_disabled, p.default_database_name, l.hasaccess, l.denylogin FROM 
 	sys.server_principals p LEFT JOIN sys.syslogins l
 	      ON ( l.name = p.name ) WHERE p.type IN ( 'S', 'G', 'U' ) AND p.name <> 'sa'
 	ELSE
 	  DECLARE login_curs CURSOR FOR
 	
 	
-	      SELECT p.sid, p.name, p.type, p.is_disabled, p.default_database_name, l.hasaccess, l.denylogin FROM 
+	SELECT p.sid, p.name, p.type, p.is_disabled, p.default_database_name, l.hasaccess, l.denylogin FROM 
 	sys.server_principals p LEFT JOIN sys.syslogins l
 	      ON ( l.name = p.name ) WHERE p.type IN ( 'S', 'G', 'U' ) AND p.name = @login_name
 	OPEN login_curs
@@ -93,7 +102,7 @@ USE master
 	    IF (@type IN ( 'G', 'U'))
 	    BEGIN -- NT authenticated account/group
 	
-	      SET @tmpstr = 'CREATE LOGIN ' + QUOTENAME( @name ) + ' FROM WINDOWS WITH DEFAULT_DATABASE = [' + @defaultdb + ']'
+	    SET @tmpstr = 'CREATE LOGIN ' + QUOTENAME( @name ) + ' FROM WINDOWS WITH DEFAULT_DATABASE = [' + @defaultdb + ']'
 	    END
 	    ELSE BEGIN -- SQL Server authentication
 	        -- obtain password and sid
