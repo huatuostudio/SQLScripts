@@ -1,3 +1,6 @@
+Use <DBNAME>
+Go
+
 SELECT
 D.name,
 F.Name AS FileType,
