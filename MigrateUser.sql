@@ -1,6 +1,11 @@
-# Run the following script, the users will be extracted in the results
+# Summary: this script generates and runs the storedproc sp_help_revlogin
+
+# Usage:
+# Run the following script, the users will be extracted in the results pannel
 # Copy and run the result script for all or selected users
 # This script can be used to sync SQL local user SID
+
+# Related:
 # Check user SID:
 # SELECT name, sid 
 # FROM sys.server_principals 
