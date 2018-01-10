@@ -1,4 +1,4 @@
-Use <DBNAME>
+Use [DBNAME]
 Go
 
 SELECT
